@@ -41,12 +41,12 @@ new RGBELoader().load(
   }
 );
 
-// Fallback Light
+// Lighting
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(5, 5, 5);
 scene.add(light);
 
-// Load Car GLTF Model
+// Load GLTF Model
 let carModel;
 const loader = new GLTFLoader();
 loader.load(
@@ -60,14 +60,13 @@ loader.load(
   },
   undefined,
   (error) => {
-    console.error('Error loading GLTF model:', error);
+    console.error('Error loading model:', error);
   }
 );
 
 // Postprocessing
 const composer = new EffectComposer(renderer);
-const renderPass = new RenderPass(scene, camera);
-composer.addPass(renderPass);
+composer.addPass(new RenderPass(scene, camera));
 
 const rgbShiftPass = new ShaderPass(RGBShiftShader);
 rgbShiftPass.uniforms['amount'].value = 0.002;
@@ -81,31 +80,72 @@ window.addEventListener('resize', () => {
   composer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Mouse or Touch Movement
-let mouseX = 0;
-let mouseY = 0;
-let targetRotationX = 0;
-let targetRotationY = 0;
-const isMobile = window.innerWidth <= 768;
+// Full Drag Interaction
+let isDragging = false;
+let previousMousePosition = { x: 0, y: 0 };
+let currentRotation = { x: 0, y: Math.PI }; // start facing front
 
-window.addEventListener("pointermove", (e) => {
-  mouseX = e.clientX / window.innerWidth - 0.5;
-  mouseY = e.clientY / window.innerHeight - 0.5;
+// Desktop Mouse
+window.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  previousMousePosition = { x: e.clientX, y: e.clientY };
 });
 
-// Animation
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging || !carModel) return;
+
+  const deltaX = (e.clientX - previousMousePosition.x) * 0.005;
+  const deltaY = (e.clientY - previousMousePosition.y) * 0.005;
+
+  currentRotation.y += deltaX;
+  currentRotation.x += deltaY;
+  currentRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentRotation.x));
+
+  previousMousePosition = { x: e.clientX, y: e.clientY };
+});
+
+// Touch Support
+window.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  previousMousePosition = {
+    x: e.touches[0].clientX,
+    y: e.touches[0].clientY,
+  };
+});
+
+window.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging || !carModel) return;
+
+  const deltaX = (e.touches[0].clientX - previousMousePosition.x) * 0.005;
+  const deltaY = (e.touches[0].clientY - previousMousePosition.y) * 0.005;
+
+  currentRotation.y += deltaX;
+  currentRotation.x += deltaY;
+  currentRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, currentRotation.x));
+
+  previousMousePosition = {
+    x: e.touches[0].clientX,
+    y: e.touches[0].clientY,
+  };
+});
+
+// Animation Loop
 function animate() {
   requestAnimationFrame(animate);
 
   if (carModel) {
-    const scaleFactor = isMobile ? 0.2 : 0.5;
-    targetRotationX = mouseY * Math.PI * 0.3;
-    targetRotationY = mouseX * Math.PI * scaleFactor;
-
     gsap.to(carModel.rotation, {
-      x: targetRotationX,
-      y: targetRotationY + Math.PI,
-      duration: 0.9,
+      x: currentRotation.x,
+      y: currentRotation.y,
+      duration: 0.5,
       ease: 'power2.out',
     });
   }
