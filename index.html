@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>BMW</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -19,6 +19,9 @@
 
     canvas {
       display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
     }
 
     a {
@@ -28,7 +31,6 @@
 
     a:hover {
       text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
-      /* Tailwind's blue-400 glow */
     }
   </style>
 </head>
@@ -37,51 +39,68 @@
   <div class="main w-full">
 
     <!-- NAVIGATION -->
-    <nav
-      class="fixed top-0 left-0 w-full px-10 py-4 flex justify-between items-center z-50 bg-black/40 backdrop-blur-md">
-      <img class="w-[100px] mix-blend-screen filter saturate-150 contrast-125"
-        src="https://www.pngall.com/wp-content/uploads/13/BMW-Logo.png" alt="BMW Logo" />
-      <div class="flex gap-8 items-center text-sm font-medium tracking-wide">
+    <nav class="fixed top-0 left-0 w-full px-5 py-3 z-50 bg-black/40 backdrop-blur-md">
+      <div class="flex justify-between items-center w-full min-h-[80px]">
+
+        <!-- LOGO -->
+        <img class="w-[80px] sm:w-[100px] mix-blend-screen filter saturate-150 contrast-125"
+          src="https://www.pngall.com/wp-content/uploads/13/BMW-Logo.png" alt="BMW Logo" />
+
+        <!-- HAMBURGER (Mobile only) -->
+        <button id="menu-btn" class="sm:hidden text-white focus:outline-none">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <!-- NAV LINKS (Desktop only) -->
+        <div class="hidden sm:flex gap-6 text-sm font-medium tracking-wide">
+          <a href="#models" class="hover:text-blue-400">Models</a>
+          <a href="#build" class="hover:text-blue-400">Build & Price</a>
+          <a href="#electric" class="hover:text-blue-400">Electric</a>
+          <a href="#dealer" class="hover:text-blue-400">Find a Dealer</a>
+          <a href="#contact" class="hover:text-blue-400">Contact</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MOBILE SIDEBAR -->
+    <div id="sidebar"
+      class="fixed top-0 right-0 w-64 h-full bg-black text-white transform translate-x-full transition-transform duration-300 z-50 sm:hidden pointer-events-auto">
+      <div class="flex flex-col p-5 gap-5 text-sm font-medium">
+        <button id="close-btn" class="text-white self-end text-3xl leading-none">&times;</button>
         <a href="#models" class="hover:text-blue-400">Models</a>
         <a href="#build" class="hover:text-blue-400">Build & Price</a>
         <a href="#electric" class="hover:text-blue-400">Electric</a>
         <a href="#dealer" class="hover:text-blue-400">Find a Dealer</a>
         <a href="#contact" class="hover:text-blue-400">Contact</a>
       </div>
-    </nav>
+    </div>
 
-    <!-- GLOW + CANVAS -->
-    
+    <!-- THREE.JS CANVAS -->
     <canvas id="canvas" class="absolute top-0 left-0 w-full h-full z-[-2]"></canvas>
-    
-
-    <!-- FUTURE SECTIONS -->
-    <!--
-    <section id="models" class="w-full h-screen bg-zinc-900 flex items-center justify-center">
-      <h2 class="text-4xl font-bold">BMW Models</h2>
-    </section>
-
-    <section id="build" class="w-full h-screen bg-zinc-800 flex items-center justify-center">
-      <h2 class="text-4xl font-bold">Build & Price</h2>
-    </section>
-
-    <section id="electric" class="w-full h-screen bg-zinc-900 flex items-center justify-center">
-      <h2 class="text-4xl font-bold">BMW Electric</h2>
-    </section>
-
-    <section id="dealer" class="w-full h-screen bg-zinc-800 flex items-center justify-center">
-      <h2 class="text-4xl font-bold">Find a Dealer</h2>
-    </section>
-
-    <section id="contact" class="w-full h-screen bg-zinc-900 flex items-center justify-center">
-      <h2 class="text-4xl font-bold">Contact Us</h2>
-    </section>
-    -->
-
   </div>
 
-  <!-- MAIN THREE.JS APP -->
+  <!-- MAIN THREE.JS SCRIPT -->
   <script type="module" src="/src/main.js"></script>
+
+  <!-- SIDEBAR TOGGLE SCRIPT -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const menuBtn = document.getElementById('menu-btn');
+      const sidebar = document.getElementById('sidebar');
+      const closeBtn = document.getElementById('close-btn');
+
+      menuBtn.addEventListener('click', () => {
+        sidebar.classList.remove('translate-x-full');
+      });
+
+      closeBtn.addEventListener('click', () => {
+        sidebar.classList.add('translate-x-full');
+      });
+    });
+  </script>
 </body>
 
 </html>

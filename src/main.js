@@ -2,13 +2,12 @@ import './style.css';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
-
-// POSTPROCESSING
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader.js';
 import gsap from 'gsap';
+
 // Scene
 const scene = new THREE.Scene();
 
@@ -47,7 +46,7 @@ const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(5, 5, 5);
 scene.add(light);
 
-// GLTF Car Model
+// Load Car GLTF Model
 let carModel;
 const loader = new GLTFLoader();
 loader.load(
@@ -56,7 +55,7 @@ loader.load(
     carModel = gltf.scene;
     carModel.scale.set(1, 1, 1);
     carModel.position.set(0, -1, 0);
-    carModel.rotation.y = Math.PI; // Rotate car to face front
+    carModel.rotation.y = Math.PI;
     scene.add(carModel);
   },
   undefined,
@@ -74,7 +73,7 @@ const rgbShiftPass = new ShaderPass(RGBShiftShader);
 rgbShiftPass.uniforms['amount'].value = 0.002;
 composer.addPass(rgbShiftPass);
 
-// Resize
+// Resize Handling
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -82,34 +81,35 @@ window.addEventListener('resize', () => {
   composer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Mouse interaction tracking
+// Mouse or Touch Movement
 let mouseX = 0;
 let mouseY = 0;
 let targetRotationX = 0;
 let targetRotationY = 0;
+const isMobile = window.innerWidth <= 768;
 
-window.addEventListener("mousemove", (e) => {
+window.addEventListener("pointermove", (e) => {
   mouseX = e.clientX / window.innerWidth - 0.5;
   mouseY = e.clientY / window.innerHeight - 0.5;
 });
 
-// Animate
+// Animation
 function animate() {
   requestAnimationFrame(animate);
 
   if (carModel) {
-  // Calculate target rotation
-  targetRotationX = mouseY * Math.PI * 0.3;
-  targetRotationY = mouseX * Math.PI * 0.5;
+    const scaleFactor = isMobile ? 0.2 : 0.5;
+    targetRotationX = mouseY * Math.PI * 0.3;
+    targetRotationY = mouseX * Math.PI * scaleFactor;
 
-  // Animate with GSAP
-  gsap.to(carModel.rotation, {
-    x: targetRotationX,
-    y: targetRotationY + Math.PI,
-    duration: 0.9,
-    ease: 'power2.out',
-  });
-}
+    gsap.to(carModel.rotation, {
+      x: targetRotationX,
+      y: targetRotationY + Math.PI,
+      duration: 0.9,
+      ease: 'power2.out',
+    });
+  }
+
   composer.render();
 }
 animate();
